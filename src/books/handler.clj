@@ -18,7 +18,7 @@
  (laser/content "Books 2013")
  (laser/class= "content")
  (laser/content (laser/unescaped content))
- (laser/class= "reviews-link")
+ (laser/class= "books-link")
  (laser/classes "selected")
  ))
 
