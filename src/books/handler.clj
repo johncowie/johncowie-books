@@ -70,15 +70,16 @@
     [:div.squares
      (for [[m month-books] (month-groups books)]
        [:div.bookmonth
-         [:a.booksquare {:href "#" :style "background-color:#000000"}
+         [:a.booksquare.month {:href "#"}
           (first (unparse month-name (date-time 2013 m)))]
        (for [book month-books]
-       [:a.booksquare {:style (str "background-color:" (random-colour) ";")
+         (let [c (random-colour)]
+       [:a.booksquare {:style (str "background-color:" c "; border-color: " c ";")
                        :href (str "#book-" (:index book))
                        :title (:title book)}
         (:index book)
         ]
-         )
+         ))
         ]
        )
      ]
@@ -96,9 +97,9 @@
 
 (defroutes app-routes
   (GET "/" [] (wrap-page
-               "http://localhost:9999"
+               "http://design.johncowie.co.uk"
                "Books 2013"
-               (book-page "resources/public/markdown/books_2013.book")))
+               (book-page "resources/public/markdown/2013.book")))
   (route/resources "/")
   (route/not-found "Not Found"))
 
@@ -106,4 +107,4 @@
   (handler/site app-routes))
 
 (defn -main [& args]
-  (spit (first args)(wrap-page (second args) "Books 2013" (book-page "resources/public/markdown/books_2013.book"))))
+  (spit (first args)(wrap-page (second args) "Books 2014" (book-page "resources/public/markdown/2014.book"))))
