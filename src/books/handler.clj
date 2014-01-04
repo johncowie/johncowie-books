@@ -15,7 +15,7 @@
 (laser/document
  (laser/parse (:body (client/get template-loc)))
  (laser/element= :title)
- (laser/content "Books 2013")
+ (laser/content "Books 2014")
  (laser/class= "content")
  (laser/content (laser/unescaped content))
  (laser/class= "books-link")
