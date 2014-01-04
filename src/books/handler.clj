@@ -66,7 +66,7 @@
     (let [books (load-books file)]
   (html
     [:style (slurp "resources/public/css/style.css")]
-    [:h1 "Books 2013"]
+    [:h1 "Books 2014"]
     [:div.squares
      (for [[m month-books] (month-groups books)]
        [:div.bookmonth
