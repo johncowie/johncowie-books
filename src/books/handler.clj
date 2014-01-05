@@ -117,6 +117,6 @@
 
 (defn -main [& args]
   (let [file-maps (files)]
-    (for [f file-maps]
+    (doseq [f file-maps]
       (spit (str (first args) "/" (:year f) ".html") (wrap-page (second args) f file-maps)))
     (spit (str (first args) "/index.html") (wrap-page (second args) (last file-maps) file-maps))))
