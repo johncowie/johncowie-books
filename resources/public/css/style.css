@@ -18,6 +18,16 @@
   color: #000000;
 }
 
+.year-list {
+  padding: 0px;
+}
+
+.year-list li {
+  display: inline-block;
+  margin: 0px 5px 0px 0px;
+  test-decoration: none;
+}
+
 a:link, a:hover, a:visited, a:active{
   text-decoration: none;
 }

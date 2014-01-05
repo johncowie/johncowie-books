@@ -11,17 +11,6 @@
             [clj-http.client :as client])
   (:gen-class))
 
-(defn wrap-page [template-loc title content]
-(laser/document
- (laser/parse (:body (client/get template-loc)))
- (laser/element= :title)
- (laser/content "Books 2014")
- (laser/class= "content")
- (laser/content (laser/unescaped content))
- (laser/class= "books-link")
- (laser/classes "selected")
- ))
-
 (def file-format (formatter "dd/MM/yyyy"))
 
 (def screen-format (formatter "dd MMM"))
@@ -62,11 +51,20 @@
 (defn month-groups [books]
   (group-by #(month (:date %)) books))
 
-(defn book-page [file]
-    (let [books (load-books file)]
+(defn files []
+   (sort-by :year (map
+    (fn [f] {:year (subs (.getName f) 0 4) :file f})
+    (rest (file-seq (clojure.java.io/file "resources/public/books"))))))
+
+(defn book-page [file-map file-maps]
+    (let [books (load-books (:file file-map))]
   (html
     [:style (slurp "resources/public/css/style.css")]
-    [:h1 "Books 2014"]
+    [:ul.year-list
+      (for [f file-maps]
+       [:li [:a {:href (str (:year f) ".html")} (:year f)]])
+     ]
+    [:h1 (str "Books " (:year file-map))]
     [:div.squares
      (for [[m month-books] (month-groups books)]
        [:div.bookmonth
@@ -95,6 +93,17 @@
    )
   ))
 
+(defn wrap-page [template-loc file-map file-maps]
+(laser/document
+ (laser/parse (:body (client/get template-loc)))
+ (laser/element= :title)
+ (laser/content (str "Books ") (:year file-map))
+ (laser/class= "content")
+ (laser/content (laser/unescaped (book-page file-map file-maps)))
+ (laser/class= "books-link")
+ (laser/classes "selected")
+ ))
+
 (defroutes app-routes
   (GET "/" [] (wrap-page
                "http://design.johncowie.co.uk"
@@ -107,4 +116,7 @@
   (handler/site app-routes))
 
 (defn -main [& args]
-  (spit (first args)(wrap-page (second args) "Books 2014" (book-page "resources/public/markdown/2014.book"))))
+  (let [file-maps (files)]
+    (for [f file-maps]
+      (spit (str (first args) "/" (:year f) ".html") (wrap-page (second args) f file-maps)))
+    (spit (str (first args) "/index.html") (wrap-page (second args) (last file-maps) file-maps))))
