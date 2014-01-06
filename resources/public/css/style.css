@@ -18,6 +18,15 @@
   color: #000000;
 }
 
+.book-title {
+  padding: 5px;
+  color: #ffffff;
+}
+
+.finished-date {
+  font-style: italic;
+}
+
 .year-list {
   padding: 0px;
 }

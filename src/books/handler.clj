@@ -21,7 +21,8 @@
   {:title (first lines)
    :author (second lines)
    :date (parse file-format (nth lines 2))
-   :review (apply str (interpose " " (drop 3 lines)))
+   :type (nth lines 3)
+   :review (apply str (interpose " " (drop 4 lines)))
    }
   )
 
@@ -34,19 +35,33 @@
 (defn index-maps [ms]
     (map #(assoc %1 :index %2) ms (range 1 (inc (count ms)))))
 
+(defn two-char-hex [i]
+  (cl-format nil "~16,2,'0r" i))
+
+(defn rand-int-range [r]
+  (+ (rand-int (- (r 1) (r 0))) (r 0)))
+
+(defn random-colour [r-range g-range b-range]
+  (str "#" (apply str (map two-char-hex
+                           [(rand-int-range r-range)
+                            (rand-int-range g-range)
+                            (rand-int-range b-range)]))))
+
+
+(defn add-colours [maps]
+  (map #(if (= (:type %) "fiction")
+          (assoc % :colour "#770000")
+          (assoc % :colour "#000077")) maps))
+
+
 (defn load-books [file]
-  (index-maps
+  (add-colours
+   (index-maps
     (sort-by :date
       (map load-book
        (filter
         #(not (blank-string? (first %)))
-        (partition-by blank-string? (line-seq (clojure.java.io/reader file))))))))
-
-(defn two-char-hex [i]
-  (cl-format nil "~16,2,'0r" i))
-
-(defn random-colour []
-  (str "#" (apply str (map two-char-hex [(rand-int 200) (rand-int 200) (rand-int 200)]))))
+        (partition-by blank-string? (line-seq (clojure.java.io/reader file)))))))))
 
 (defn month-groups [books]
   (group-by #(month (:date %)) books))
@@ -71,22 +86,19 @@
          [:a.booksquare.month {:href "#"}
           (first (unparse month-name (date-time 2013 m)))]
        (for [book month-books]
-         (let [c (random-colour)]
-       [:a.booksquare {:style (str "background-color:" c "; border-color: " c ";")
+       [:a.booksquare {:style (str "background-color:" (:colour book) "; border-color: " (:colour book) ";")
                        :href (str "#book-" (:index book))
                        :title (:title book)}
         (:index book)
         ]
-         ))
-        ]
-       )
+         )])
      ]
     [:div.books
     (for [book books]
       [:div.book {:id (str "book-" (:index book))}
-        [:h2 (str (:title book) " - " (:author book))]
-        [:h3 (unparse screen-format (:date book))]
-        [:p (:review book)]
+        [:h3.book-title {:style (str "background-color: " (:colour book) ";")}(str (:title book) " - " (:author book))]
+        [:p (:review book)
+                 [:span.finished-date (str "  Finished " (unparse screen-format (:date book)) ".") ]]
       ]
       )
      ]
@@ -107,8 +119,8 @@
 (defroutes app-routes
   (GET "/" [] (wrap-page
                "http://design.johncowie.co.uk"
-               "Books 2013"
-               (book-page "resources/public/markdown/2013.book")))
+               (first (files))
+               (files)))
   (route/resources "/")
   (route/not-found "Not Found"))
 
